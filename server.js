@@ -11,35 +11,41 @@ app.get("/health", (req, res) => {
   res.json({ ok: true });
 });
 
-/*
-STREAM VIDEO FROM GOOGLE DRIVE
-*/
 app.get("/stream", async (req, res) => {
   try {
+    const { fileId } = req.query;
 
-    const { url } = req.query;
-
-    if (!url) {
-      return res.status(400).send("Missing url parameter");
+    if (!fileId) {
+      return res.status(400).send("Missing fileId parameter");
     }
+
+    const driveUrl = `https://drive.google.com/uc?export=download&id=${fileId}`;
 
     const response = await axios({
       method: "GET",
-      url: url,
+      url: driveUrl,
       responseType: "stream",
+      maxRedirects: 5,
       headers: {
         "User-Agent": "Mozilla/5.0",
-        "Accept": "*/*"
-      }
+        "Accept": "*/*",
+      },
     });
 
-    res.setHeader("Content-Type", "video/mp4");
+    const contentType = response.headers["content-type"] || "application/octet-stream";
+    if (contentType) {
+      res.setHeader("Content-Type", contentType);
+    }
+
+    const contentLength = response.headers["content-length"];
+    if (contentLength) {
+      res.setHeader("Content-Length", contentLength);
+    }
 
     response.data.pipe(res);
-
   } catch (err) {
-    console.error(err.message);
-    res.status(500).send("Streaming failed");
+    console.error("STREAM ERROR:", err.response?.status, err.response?.statusText, err.message);
+    res.status(500).send(`Streaming failed: ${err.response?.status || ""} ${err.response?.statusText || err.message}`);
   }
 });
 
