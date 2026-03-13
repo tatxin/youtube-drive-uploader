@@ -1,0 +1,11 @@
+{
+  "name": "youtube-drive-uploader",
+  "version": "1.0.0",
+  "main": "server.js",
+  "type": "module",
+  "dependencies": {
+    "axios": "^1.6.0",
+    "express": "^4.18.2",
+    "googleapis": "^126.0.0"
+  }
+}
