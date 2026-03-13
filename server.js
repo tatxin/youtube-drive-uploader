@@ -1,13 +1,13 @@
-import express from "express";
-import axios from "axios";
-import { google } from "googleapis";
+app.get("/", (req, res) => {
+  res.send("Uploader API is running");
+});
 
-const app = express();
-app.use(express.json());
+app.get("/health", (req, res) => {
+  res.json({ ok: true });
+});
 
 app.post("/upload", async (req, res) => {
   try {
-
     const { downloadUrl, title } = req.body;
 
     const youtube = google.youtube({
@@ -24,12 +24,8 @@ app.post("/upload", async (req, res) => {
     const response = await youtube.videos.insert({
       part: "snippet,status",
       requestBody: {
-        snippet: {
-          title: title
-        },
-        status: {
-          privacyStatus: "public"
-        }
+        snippet: { title: title },
+        status: { privacyStatus: "public" }
       },
       media: {
         body: videoStream.data
@@ -37,13 +33,14 @@ app.post("/upload", async (req, res) => {
     });
 
     res.json(response.data);
-
   } catch (err) {
     console.error(err);
     res.status(500).send(err.message);
   }
 });
 
-app.listen(3000, () => {
-  console.log("Uploader running");
+const PORT = process.env.PORT || 3000;
+
+app.listen(PORT, "0.0.0.0", () => {
+  console.log(`Uploader running on port ${PORT}`);
 });
