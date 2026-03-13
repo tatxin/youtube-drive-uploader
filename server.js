@@ -19,10 +19,18 @@ app.get("/stream", async (req, res) => {
 
     const { url } = req.query;
 
+    if (!url) {
+      return res.status(400).send("Missing url parameter");
+    }
+
     const response = await axios({
       method: "GET",
       url: url,
-      responseType: "stream"
+      responseType: "stream",
+      headers: {
+        "User-Agent": "Mozilla/5.0",
+        "Accept": "*/*"
+      }
     });
 
     res.setHeader("Content-Type", "video/mp4");
@@ -30,7 +38,7 @@ app.get("/stream", async (req, res) => {
     response.data.pipe(res);
 
   } catch (err) {
-    console.error(err);
+    console.error(err.message);
     res.status(500).send("Streaming failed");
   }
 });
