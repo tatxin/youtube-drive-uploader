@@ -1,3 +1,10 @@
+import express from "express";
+import axios from "axios";
+import { google } from "googleapis";
+
+const app = express();
+app.use(express.json());
+
 app.get("/", (req, res) => {
   res.send("Uploader API is running");
 });
@@ -24,8 +31,12 @@ app.post("/upload", async (req, res) => {
     const response = await youtube.videos.insert({
       part: "snippet,status",
       requestBody: {
-        snippet: { title: title },
-        status: { privacyStatus: "public" }
+        snippet: {
+          title: title
+        },
+        status: {
+          privacyStatus: "public"
+        }
       },
       media: {
         body: videoStream.data
