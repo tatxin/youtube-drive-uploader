@@ -1,9 +1,7 @@
 import express from "express";
 import axios from "axios";
-import { google } from "googleapis";
 
 const app = express();
-app.use(express.json());
 
 app.get("/", (req, res) => {
   res.send("Uploader API is running");
@@ -13,40 +11,27 @@ app.get("/health", (req, res) => {
   res.json({ ok: true });
 });
 
-app.post("/upload", async (req, res) => {
+/*
+STREAM VIDEO FROM GOOGLE DRIVE
+*/
+app.get("/stream", async (req, res) => {
   try {
-    const { downloadUrl, title } = req.body;
 
-    const youtube = google.youtube({
-      version: "v3",
-      auth: process.env.YOUTUBE_API_KEY
-    });
+    const { url } = req.query;
 
-    const videoStream = await axios({
-      url: downloadUrl,
+    const response = await axios({
       method: "GET",
+      url: url,
       responseType: "stream"
     });
 
-    const response = await youtube.videos.insert({
-      part: "snippet,status",
-      requestBody: {
-        snippet: {
-          title: title
-        },
-        status: {
-          privacyStatus: "public"
-        }
-      },
-      media: {
-        body: videoStream.data
-      }
-    });
+    res.setHeader("Content-Type", "video/mp4");
 
-    res.json(response.data);
+    response.data.pipe(res);
+
   } catch (err) {
     console.error(err);
-    res.status(500).send(err.message);
+    res.status(500).send("Streaming failed");
   }
 });
 
