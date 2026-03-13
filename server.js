@@ -28,24 +28,18 @@ app.get("/stream", async (req, res) => {
       maxRedirects: 5,
       headers: {
         "User-Agent": "Mozilla/5.0",
-        "Accept": "*/*",
-      },
+      }
     });
 
     const contentType = response.headers["content-type"] || "application/octet-stream";
-    if (contentType) {
-      res.setHeader("Content-Type", contentType);
-    }
 
-    const contentLength = response.headers["content-length"];
-    if (contentLength) {
-      res.setHeader("Content-Length", contentLength);
-    }
+    res.setHeader("Content-Type", contentType);
 
     response.data.pipe(res);
+
   } catch (err) {
-    console.error("STREAM ERROR:", err.response?.status, err.response?.statusText, err.message);
-    res.status(500).send(`Streaming failed: ${err.response?.status || ""} ${err.response?.statusText || err.message}`);
+    console.error("STREAM ERROR:", err.message);
+    res.status(500).send("Streaming failed");
   }
 });
 
